@@ -1,8 +1,7 @@
 from crewai import Task
-# Import the agents defined in stock_agents.py
 from stock_agents import data_collector, technical_analyst, news_analyst, investment_advisor
 
-# ==================== TASKS ====================
+
 
 def create_tasks(company_ticker: str):
     """Create tasks for analyzing the given stock ticker"""
@@ -49,4 +48,5 @@ def create_tasks(company_ticker: str):
     )
 
     return [task1, task2, task3, task4]
+
 
