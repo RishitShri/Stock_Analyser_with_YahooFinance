@@ -1,10 +1,10 @@
 from crewai import Agent
-# Import the tools from the local tools file
+
 from stock_tools import fetch_stock_data, calculate_technical_indicators, get_stock_news
 
-# ==================== AGENTS ====================
 
-# Agent 1: Data Collector
+
+
 data_collector = Agent(
     role='Financial Data Collector',
     goal='Gather comprehensive stock data from Yahoo Finance including historical prices, volume, and company information',
@@ -16,7 +16,7 @@ data_collector = Agent(
     allow_delegation=False
 )
 
-# Agent 2: Technical Analyst
+
 technical_analyst = Agent(
     role='Technical Analysis Expert',
     goal='Analyze stock trends using technical indicators and chart patterns',
@@ -28,7 +28,7 @@ technical_analyst = Agent(
     allow_delegation=False
 )
 
-# Agent 3: News Analyst
+
 news_analyst = Agent(
     role='Market News Analyst',
     goal='Analyze recent news and market sentiment around the stock',
@@ -40,7 +40,7 @@ news_analyst = Agent(
     allow_delegation=False
 )
 
-# Agent 4: Investment Advisor
+
 investment_advisor = Agent(
     role='Senior Investment Advisor',
     goal='Provide clear BUY/SELL/HOLD recommendations based on comprehensive analysis',
@@ -51,4 +51,5 @@ investment_advisor = Agent(
     verbose=True,
     allow_delegation=False
 )
+
 
