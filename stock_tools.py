@@ -1,15 +1,13 @@
 import os
 from datetime import datetime, timedelta
-from crewai.tools import tool # Corrected import from the notebook's context
+from crewai.tools import tool 
 import yfinance as yf
 import pandas as pd
 import numpy as np
 
-# Set your OpenAI API key (or use other LLM)
-# This is typically handled in the main file or via .env, but included here for completeness
-# os.environ["OPENAI_API_KEY"] = "your-api-key-here"
 
-# ==================== TOOLS ====================
+
+
 
 @tool("Stock Data Fetcher")
 def fetch_stock_data(ticker: str) -> str:
@@ -160,4 +158,5 @@ def get_stock_news(ticker: str) -> str:
 
     except Exception as e:
         return f"Error fetching news: {str(e)}"
+
 
