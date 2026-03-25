@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: stock-analyzer
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python src/main.py   # adjust if needed
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
