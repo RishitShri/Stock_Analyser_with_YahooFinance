@@ -1,30 +1,39 @@
-#!/usr/bin/env python
-import sys
-import warnings
-
+from flask import Flask, request, jsonify
+import os
 from datetime import datetime
-
 from stock_analyser_pro.crew import StockAnalyserPro
 
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
+app = Flask(__name__)
 
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
+@app.route("/")
+def home():
+    return "Stock Analyzer is running 🚀"
 
-def run():
-    """
-    Run the crew.
-    """
-    inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
-    }
-
+@app.route("/analyze", methods=["POST"])
+def analyze():
     try:
-        StockAnalyserPro().crew().kickoff(inputs=inputs)
+        data = request.get_json()
+
+        topic = data.get("topic", "AI LLMs")
+
+        inputs = {
+            'topic': topic,
+            'current_year': str(datetime.now().year)
+        }
+
+        result = StockAnalyserPro().crew().kickoff(inputs=inputs)
+
+        return jsonify({
+            "status": "success",
+            "result": str(result)
+        })
+
     except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
 
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
