@@ -1,5 +1,6 @@
 crewai>=1.3.0
 crewai-tools>=1.3.0
+flask
 yfinance>=0.2.40
 pandas>=2.2.0
 numpy>=1.26.0
