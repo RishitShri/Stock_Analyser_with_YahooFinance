@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from datetime import datetime
-from stock_analyser_pro.crew import StockAnalyserPro
+from src.stock_analyser_pro.crew import StockAnalyserPro
 
 app = Flask(__name__)
 
