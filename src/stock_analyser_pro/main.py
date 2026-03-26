@@ -12,22 +12,21 @@ def home():
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
 
-        # ✅ FIXED indentation
         ticker = data.get("ticker", "AAPL")
         topic = f"{ticker} stock analysis"
 
         inputs = {
-            'topic': topic,
-            'current_year': str(datetime.now().year)
+            "topic": topic,
+            "current_year": str(datetime.now().year)
         }
 
         result = StockAnalyserPro().crew().kickoff(inputs=inputs)
 
         return jsonify({
             "status": "success",
-            "ticker": ticker,   # ✅ added (useful)
+            "ticker": ticker,
             "result": str(result)
         })
 
