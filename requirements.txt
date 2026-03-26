@@ -1,5 +1,5 @@
-crewai==0.11.2
-crewai-tools==0.0.1
+crewai>=0.28.0
+crewai-tools>=0.0.1
 flask
 gunicorn
 yfinance>=0.2.40
