@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os
-from stock_analyser_pro.crew import analyze_stock  # IMPORTANT
+from datetime import datetime
+from stock_analyser_pro.crew import StockAnalyserPro
 
 app = Flask(__name__)
 
@@ -14,17 +15,15 @@ def analyze():
     try:
         data = request.get_json()
 
-        # ✅ Strict validation (NO default)
-        if not data or "ticker" not in data:
-            return jsonify({
-                "status": "error",
-                "message": "Ticker is required"
-            }), 400
+        ticker = data.get("ticker", "AAPL")
+        topic = f"{ticker} stock analysis"
 
-        ticker = data["ticker"].upper().strip()
+        inputs = {
+            "topic": topic,
+            "current_year": str(datetime.now().year)
+        }
 
-        # ✅ Call your crew properly
-        result = analyze_stock(ticker)
+        result = StockAnalyserPro().crew().kickoff(inputs=inputs)
 
         return jsonify({
             "status": "success",
@@ -36,7 +35,7 @@ def analyze():
         return jsonify({
             "status": "error",
             "message": str(e)
-        }), 500
+        })
 
 
 if __name__ == "__main__":
