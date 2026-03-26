@@ -14,9 +14,9 @@ def analyze():
     try:
         data = request.get_json()
 
-       ticker = data.get("ticker", "AAPL")
-
-       topic = f"{ticker} stock analysis"
+        # ✅ FIXED indentation
+        ticker = data.get("ticker", "AAPL")
+        topic = f"{ticker} stock analysis"
 
         inputs = {
             'topic': topic,
@@ -27,6 +27,7 @@ def analyze():
 
         return jsonify({
             "status": "success",
+            "ticker": ticker,   # ✅ added (useful)
             "result": str(result)
         })
 
