@@ -23,11 +23,11 @@ def analyze():
         }
 
         result = StockAnalyserPro().crew().kickoff(inputs=inputs)
-
+        clean_result = str(result)
         return jsonify({
             "status": "success",
             "ticker": ticker,
-            "result": str(result)
+            "analysis": clean_result
         })
 
     except Exception as e:
