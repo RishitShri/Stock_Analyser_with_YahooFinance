@@ -19,19 +19,7 @@ data_collector = Agent(
 
 technical_analyst = Agent(
     role='Technical Analysis Expert',
-    goal=goal = """Provide final stock analysis in STRICT JSON format only.
-
-    Return ONLY valid JSON. Do NOT include markdown, explanations, or extra text.
-
-    JSON format:
-    {
-      "overview": "brief summary of stock performance",
-      "strengths": ["point1", "point2", "point3"],
-      "risks": ["point1", "point2", "point3"],
-      "recommendation": "BUY or SELL or HOLD",
-      "risk_level": "Low or Medium or High"
-    }
-    """,
+    goal = 'Analyze stock trends using technical indicators and chart patterns',
     backstory="""You are a seasoned technical analyst with years of experience
     in reading charts and identifying trends. You specialize in moving averages,
     RSI, MACD, and other technical indicators to predict price movements.""",
