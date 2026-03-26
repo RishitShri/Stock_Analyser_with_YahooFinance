@@ -15,7 +15,9 @@ def fetch_stock_data(ticker: str) -> str:
     Fetches stock data from Yahoo Finance for the past 3 months.
     Returns historical prices, volume, and basic statistics.
     """
+    
     try:
+        ticker = ticker.upper().strip().split()[0]
         stock = yf.Ticker(ticker)
 
         # Get 3 months of historical data
@@ -71,6 +73,7 @@ def calculate_technical_indicators(ticker: str) -> str:
     Calculates technical indicators including moving averages, RSI, and MACD.
     """
     try:
+        ticker = ticker.upper().strip().split()[0]
         stock = yf.Ticker(ticker)
         end_date = datetime.now()
         start_date = end_date - timedelta(days=120)  # Extra data for indicators
@@ -142,6 +145,7 @@ def get_stock_news(ticker: str) -> str:
     Retrieves recent news about the stock.
     """
     try:
+        ticker = ticker.upper().strip().split()[0]
         stock = yf.Ticker(ticker)
         news = stock.news
 
