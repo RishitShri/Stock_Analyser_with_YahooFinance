@@ -2,48 +2,75 @@ from crewai import Task
 from stock_agents import data_collector, technical_analyst, news_analyst, investment_advisor
 
 
-
-def create_tasks(company_ticker: str):
+def create_tasks():
     """Create tasks for analyzing the given stock ticker"""
 
     task1 = Task(
-        description=f"""Collect comprehensive stock data for {company_ticker}.
-        Gather 3-month historical data, current price, volume, market cap,
-        P/E ratio, and other key financial metrics.""",
+        description="""
+        Collect comprehensive stock data for {ticker}.
+
+        You MUST:
+        - Use Stock Data Fetcher tool
+        - Gather 3-month historical data
+        - Include price, volume, market cap, P/E ratio
+
+        Do NOT guess values.
+        """,
         agent=data_collector,
-        expected_output="Detailed stock data report with all key metrics"
+        expected_output="Detailed stock data report"
     )
 
     task2 = Task(
-        description=f"""Perform technical analysis on {company_ticker}.
-        Calculate and interpret moving averages, RSI, MACD, and identify
-        current trends. Determine if technical indicators suggest bullish
-        or bearish momentum.""",
+        description="""
+        Perform technical analysis on {ticker}.
+
+        You MUST:
+        - Use Technical Analysis Tool
+        - Calculate moving averages, RSI, MACD
+        - Identify bullish or bearish trend
+
+        Do NOT generate fake indicators.
+        """,
         agent=technical_analyst,
-        expected_output="Technical analysis report with indicator interpretations"
+        expected_output="Technical analysis report"
     )
 
     task3 = Task(
-        description=f"""Analyze recent news and market sentiment for {company_ticker}.
-        Review recent headlines and assess overall market sentiment.""",
+        description="""
+        Analyze recent news for {ticker}.
+
+        You MUST:
+        - Use News Sentiment Tool
+        - Summarize sentiment (positive/negative/neutral)
+
+        Do NOT hallucinate news.
+        """,
         agent=news_analyst,
         expected_output="News sentiment summary"
     )
 
     task4 = Task(
-        description=f"""Based on all collected data, technical analysis, and news sentiment,
-        provide a final investment recommendation for {company_ticker}.
+        description="""
+        Based on ALL previous results, provide final recommendation for {ticker}.
 
-        Your recommendation must include:
+        STRICT FORMAT:
+
         1. Brief overview of stock performance over the past 3 months
         2. Key strengths and risks
         3. Clear recommendation: BUY, SELL, or HOLD
-        4. Reasoning for your recommendation
-        5. Risk level assessment (Low/Medium/High)
+        4. Reasoning for recommendation
+        5. Risk level (Low/Medium/High)
+        6. Actionable summary
 
-        Be specific and actionable.""",
+        Use insights from:
+        - Stock data
+        - Technical indicators
+        - News sentiment
+
+        Do NOT add extra sections.
+        """,
         agent=investment_advisor,
-        expected_output="Final investment recommendation with BUY/SELL/HOLD decision",
+        expected_output="Final structured investment recommendation",
         context=[task1, task2, task3]
     )
 
