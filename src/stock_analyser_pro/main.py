@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import os
-from datetime import datetime
-from stock_analyser_pro.crew import StockAnalyserPro
+from stock_analyser_pro.crew import analyze_stock  # IMPORTANT
 
 app = Flask(__name__)
 
@@ -9,32 +8,36 @@ app = Flask(__name__)
 def home():
     return "Stock Analyzer is running 🚀"
 
+
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
-        data = request.get_json() or {}
+        data = request.get_json()
 
-        ticker = data.get("ticker", "AAPL")
-        
+        # ✅ Strict validation (NO default)
+        if not data or "ticker" not in data:
+            return jsonify({
+                "status": "error",
+                "message": "Ticker is required"
+            }), 400
 
-        inputs = {
-            "ticker": ticker,
-            "current_year": str(datetime.now().year)
-        }
+        ticker = data["ticker"].upper().strip()
 
-        result = StockAnalyserPro().crew().kickoff(inputs=inputs)
-        clean_result = str(result)
+        # ✅ Call your crew properly
+        result = analyze_stock(ticker)
+
         return jsonify({
             "status": "success",
             "ticker": ticker,
-            "analysis": clean_result
+            "analysis": str(result)
         })
 
     except Exception as e:
         return jsonify({
             "status": "error",
             "message": str(e)
-        })
+        }), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
