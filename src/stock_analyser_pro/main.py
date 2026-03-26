@@ -22,7 +22,7 @@ def analyze():
             "current_year": str(datetime.now().year)
         }
 
-        result = StockAnalyserPro().crew().kickoff(inputs=inputs)
+        result = analyze_stock(ticker)
         clean_result = str(result)
         return jsonify({
             "status": "success",
