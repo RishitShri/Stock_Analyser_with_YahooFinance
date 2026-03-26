@@ -51,7 +51,9 @@ def analyze_stock(company_ticker: str):
         )
 
         # ✅ Run crew (NO inputs dict)
-        result = crew.kickoff()
+        result = crew.kickoff(inputs={
+           "ticker": company_ticker
+        })
 
         print(f"\n{'='*60}")
         print("FINAL RECOMMENDATION")
