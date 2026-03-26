@@ -15,10 +15,10 @@ def analyze():
         data = request.get_json() or {}
 
         ticker = data.get("ticker", "AAPL")
-        topic = f"{ticker} stock analysis"
+        
 
         inputs = {
-            "topic": topic,
+            "ticker": ticker,
             "current_year": str(datetime.now().year)
         }
 
