@@ -14,7 +14,9 @@ def analyze():
     try:
         data = request.get_json()
 
-        topic = data.get("topic", "AI LLMs")
+       ticker = data.get("ticker", "AAPL")
+
+       topic = f"{ticker} stock analysis"
 
         inputs = {
             'topic': topic,
