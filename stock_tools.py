@@ -26,7 +26,7 @@ def fetch_stock_data(ticker: str) -> str:
         hist = stock.history(start=start_date, end=end_date)
 
         if hist.empty:
-            return f"No data found for ticker: {ticker}"
+            raise ValueError(f"Invalid or unsupported ticker: {ticker}")
 
         # Get stock info
         info = stock.info
@@ -45,26 +45,26 @@ def fetch_stock_data(ticker: str) -> str:
         volatility = returns.std() * np.sqrt(252) * 100  # Annualized
 
         result = f"""
-Stock Data for {ticker}:
-Company Name: {info.get('longName', 'N/A')}
-Sector: {info.get('sector', 'N/A')}
-Industry: {info.get('industry', 'N/A')}
-Current Price: ${current_price:.2f}
-3-Month Change: {change_3m:.2f}%
-3-Month High: ${high_3m:.2f}
-3-Month Low: ${low_3m:.2f}
-Average Volume: {avg_volume:,.0f}
-Annualized Volatility: {volatility:.2f}%
+        Stock Data for {ticker}:
+        Company Name: {info.get('longName', 'N/A')}
+        Sector: {info.get('sector', 'N/A')}
+        Industry: {info.get('industry', 'N/A')}
+        Current Price: ${current_price:.2f}
+        3-Month Change: {change_3m:.2f}%
+        3-Month High: ${high_3m:.2f}
+        3-Month Low: ${low_3m:.2f}
+        Average Volume: {avg_volume:,.0f}
+        Annualized Volatility: {volatility:.2f}%
 
-Market Cap: ${info.get('marketCap', 0):,.0f}
-P/E Ratio: {info.get('trailingPE', 'N/A')}
-52-Week High: ${info.get('fiftyTwoWeekHigh', 'N/A')}
-52-Week Low: ${info.get('fiftyTwoWeekLow', 'N/A')}
-"""
+        Market Cap: ${info.get('marketCap', 0):,.0f}
+        P/E Ratio: {info.get('trailingPE', 'N/A')}
+        52-Week High: ${info.get('fiftyTwoWeekHigh', 'N/A')}
+        52-Week Low: ${info.get('fiftyTwoWeekLow', 'N/A')}
+        """
         return result
 
     except Exception as e:
-        return f"Error fetching data: {str(e)}"
+        raise ValueError(f"Error fetching data for {ticker}: {str(e)}")
 
 
 @tool("Technical Analysis Tool")
@@ -80,8 +80,7 @@ def calculate_technical_indicators(ticker: str) -> str:
         hist = stock.history(start=start_date, end=end_date)
 
         if hist.empty:
-            return "No data available for technical analysis"
-
+            raise ValueError(f"No technical data available for ticker: {ticker}")
         # Moving Averages
         ma_20 = hist['Close'].rolling(window=20).mean().iloc[-1]
         ma_50 = hist['Close'].rolling(window=50).mean().iloc[-1]
@@ -115,28 +114,28 @@ def calculate_technical_indicators(ticker: str) -> str:
         macd_signal = "Bullish" if macd_current > signal_current else "Bearish"
 
         result = f"""
-Technical Analysis for {ticker}:
+        Technical Analysis for {ticker}:
 
-Moving Averages:
-- Current Price: ${current_price:.2f}
-- 20-Day MA: ${ma_20:.2f}
-- 50-Day MA: ${ma_50:.2f}
-- MA Trend: {ma_trend}
+        Moving Averages:
+        - Current Price: ${current_price:.2f}
+        - 20-Day MA: ${ma_20:.2f}
+        - 50-Day MA: ${ma_50:.2f}
+        - MA Trend: {ma_trend}
 
-RSI (14-day): {current_rsi:.2f}
-- Signal: {rsi_signal}
+        RSI (14-day): {current_rsi:.2f}
+        - Signal: {rsi_signal}
 
-MACD:
-- MACD Line: {macd_current:.4f}
-- Signal Line: {signal_current:.4f}
-- Trend: {macd_signal}
+        MACD:
+        - MACD Line: {macd_current:.4f}
+        - Signal Line: {signal_current:.4f}
+        - Trend: {macd_signal}
 
-Overall Technical Outlook: {'Positive' if ma_trend == 'Bullish' and current_rsi < 70 else 'Negative' if ma_trend == 'Bearish' else 'Mixed'}
-"""
+        Overall Technical Outlook: {'Positive' if ma_trend == 'Bullish' and current_rsi < 70 else 'Negative' if ma_trend == 'Bearish' else 'Mixed'}
+        """
         return result
 
     except Exception as e:
-        return f"Error in technical analysis: {str(e)}"
+        raise ValueError(f"Technical analysis failed for {ticker}: {str(e)}")
 
 
 @tool("News Sentiment Tool")
@@ -150,7 +149,7 @@ def get_stock_news(ticker: str) -> str:
         news = stock.news
 
         if not news:
-            return "No recent news available"
+            raise ValueError(f"No news available for ticker: {ticker}")
 
         result = f"Recent News for {ticker}:\n\n"
         for i, article in enumerate(news[:5], 1):
@@ -161,6 +160,6 @@ def get_stock_news(ticker: str) -> str:
         return result
 
     except Exception as e:
-        return f"Error fetching news: {str(e)}"
+        raise ValueError(f"News fetch failed for {ticker}: {str(e)}")
 
 
