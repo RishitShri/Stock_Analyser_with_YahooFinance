@@ -1,24 +1,22 @@
 import os
+import re
 from crewai import Crew, Process
-
-from stock_agents import (
-    data_collector,
-    technical_analyst,
-    news_analyst,
-    investment_advisor
-)
-
-from stock_tasks import create_tasks
-
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# Import agents
+from stock_agents import data_collector, technical_analyst, news_analyst, investment_advisor
+
+# Import tasks
+from stock_tasks import create_tasks
 
 load_dotenv()
 
-# ---------------- API SETUP ---------------- #
-
 app = FastAPI()
+
+
+# ---------------- REQUEST MODEL ---------------- #
 
 class StockRequest(BaseModel):
     ticker: str
@@ -28,38 +26,30 @@ class StockRequest(BaseModel):
 
 def analyze_stock(company_ticker: str):
 
-    # ✅ Validate API key
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY is not set in environment")
-
-    if not company_ticker or not company_ticker.strip():
-        raise ValueError("Ticker cannot be empty")
+        raise ValueError("OPENAI_API_KEY is not set")
 
     ticker = company_ticker.upper().strip()
 
-    try:
-        tasks = create_tasks(ticker)
+    tasks = create_tasks(ticker)
 
-        crew = Crew(
-            agents=[
-                data_collector,
-                technical_analyst,
-                news_analyst,
-                investment_advisor
-            ],
-            tasks=tasks,
-            process=Process.sequential,
-            verbose=False   # 🔥 IMPORTANT FIX
-        )
+    crew = Crew(
+        agents=[data_collector, technical_analyst, news_analyst, investment_advisor],
+        tasks=tasks,
+        process=Process.sequential,
+        verbose=False   # 🔥 important
+    )
 
-        result = crew.kickoff(inputs={
-            "ticker": ticker
-        })
+    result = crew.kickoff()
 
-        return str(result)   # 🔥 ensure clean output
+    return str(result)
 
-    except Exception as e:
-        raise ValueError(f"Stock analysis failed for {ticker}: {str(e)}")
+
+# ---------------- HELPER (STRUCTURED PARSING) ---------------- #
+
+def extract_field(pattern, text, default=""):
+    match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+    return match.group(1).strip() if match else default
 
 
 # ---------------- API ROUTES ---------------- #
@@ -74,9 +64,44 @@ def analyze(request: StockRequest):
     try:
         result = analyze_stock(request.ticker)
 
+        # -------- Extract structured fields -------- #
+
+        # Action
+        action = "HOLD"
+        if "BUY" in result.upper():
+            action = "BUY"
+        elif "SELL" in result.upper():
+            action = "SELL"
+
+        # Risk
+        risk = extract_field(r"Risk Level.*?:\s*(Low|Medium|High)", result, "Medium")
+
+        # Sections
+        summary = extract_field(r"1\.\s*(.*?)\n2\.", result)
+        strengths_raw = extract_field(r"Strengths:(.*?)Risks:", result)
+        risks_raw = extract_field(r"Risks:(.*?)3\.", result)
+        reasoning = extract_field(r"Reasoning.*?:\s*(.*?)\n5\.", result)
+
+        strengths = [
+            s.strip("- ").strip()
+            for s in strengths_raw.split("\n")
+            if s.strip()
+        ]
+
+        risks = [
+            r.strip("- ").strip()
+            for r in risks_raw.split("\n")
+            if r.strip()
+        ]
+
         return {
-            "ticker": request.ticker,
-            "recommendation": result
+            "ticker": request.ticker.upper(),
+            "action": action,
+            "risk": risk,
+            "summary": summary,
+            "strengths": strengths,
+            "risks": risks,
+            "reasoning": reasoning
         }
 
     except Exception as e:
