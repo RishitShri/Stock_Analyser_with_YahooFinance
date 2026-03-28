@@ -1,22 +1,6 @@
-import os
 from crewai import Agent
-from langchain_openai import ChatOpenAI
 
 from stock_tools import fetch_stock_data, calculate_technical_indicators, get_stock_news
-
-
-# ✅ Create LLM SAFELY at runtime (no crash on Railway)
-def get_llm():
-    api_key = os.getenv("OPENAI_API_KEY")
-
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY not found in environment")
-
-    return ChatOpenAI(
-        model="gpt-4o-mini",
-        temperature=0.2,
-        api_key=api_key
-    )
 
 
 # ---------------- AGENTS ---------------- #
@@ -28,7 +12,6 @@ data_collector = Agent(
     You have access to Yahoo Finance and can retrieve detailed stock information,
     historical prices, and market statistics.""",
     tools=[fetch_stock_data],
-    llm=get_llm(),
     verbose=False,
     allow_delegation=False
 )
@@ -41,7 +24,6 @@ technical_analyst = Agent(
     in reading charts and identifying trends. You specialize in moving averages,
     RSI, MACD, and other technical indicators to predict price movements.""",
     tools=[calculate_technical_indicators],
-    llm=get_llm(),
     verbose=False,
     allow_delegation=False
 )
@@ -54,7 +36,6 @@ news_analyst = Agent(
     and company developments. You understand how news impacts stock prices and
     can gauge investor sentiment.""",
     tools=[get_stock_news],
-    llm=get_llm(),
     verbose=False,
     allow_delegation=False
 )
@@ -67,7 +48,6 @@ investment_advisor = Agent(
     You synthesize fundamental data, technical analysis, and market sentiment to
     provide actionable investment recommendations. You always provide clear reasoning
     for your recommendations and consider risk factors.""",
-    llm=get_llm(),
     verbose=False,
     allow_delegation=False
 )
