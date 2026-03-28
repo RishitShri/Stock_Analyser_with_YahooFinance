@@ -11,33 +11,35 @@ from stock_agents import (
 from stock_tasks import create_tasks
 
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from pydantic import BaseModel
+
 load_dotenv()
 
+# ---------------- API SETUP ---------------- #
+
+app = FastAPI()
+
+class StockRequest(BaseModel):
+    ticker: str
+
+
+# ---------------- CORE FUNCTION ---------------- #
 
 def analyze_stock(company_ticker: str):
-    """
-    Main function to run the multi-agent stock analysis
-    """
 
-    # ✅ Validate API key (STRICT)
+    # ✅ Validate API key
     if "OPENAI_API_KEY" not in os.environ:
         raise ValueError("OPENAI_API_KEY is not set in environment")
 
-    # ✅ Clean ticker input
     if not company_ticker or not company_ticker.strip():
         raise ValueError("Ticker cannot be empty")
 
     ticker = company_ticker.upper().strip()
 
-    print(f"\n{'='*60}")
-    print(f"Starting Stock Analysis for: {ticker}")
-    print(f"{'='*60}\n")
-
     try:
-        # ✅ Create tasks using ticker ONLY
         tasks = create_tasks(ticker)
 
-        # ✅ Create crew
         crew = Crew(
             agents=[
                 data_collector,
@@ -47,35 +49,35 @@ def analyze_stock(company_ticker: str):
             ],
             tasks=tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=False   # 🔥 IMPORTANT FIX
         )
 
-        # ✅ Run crew (NO inputs dict)
         result = crew.kickoff(inputs={
-           "ticker": company_ticker
+            "ticker": ticker
         })
 
-        print(f"\n{'='*60}")
-        print("FINAL RECOMMENDATION")
-        print(f"{'='*60}\n")
-        print(result)
-
-        return result
+        return str(result)   # 🔥 ensure clean output
 
     except Exception as e:
-        # 🚨 IMPORTANT: Stop hallucination
         raise ValueError(f"Stock analysis failed for {ticker}: {str(e)}")
 
 
-# ✅ Local testing only (safe)
-if __name__ == "__main__":
+# ---------------- API ROUTES ---------------- #
 
-    company_input = input("Enter company stock ticker (e.g., AAPL, TSLA, MSFT): ")
+@app.get("/")
+def home():
+    return {"message": "Stock Analyzer API Running"}
 
-    if not company_input:
-        print("❌ No ticker provided. Exiting...")
-    else:
-        try:
-            analyze_stock(company_input)
-        except Exception as e:
-            print(f"Error: {e}")
+
+@app.post("/analyze")
+def analyze(request: StockRequest):
+    try:
+        result = analyze_stock(request.ticker)
+
+        return {
+            "ticker": request.ticker,
+            "recommendation": result
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
