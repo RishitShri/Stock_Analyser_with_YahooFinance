@@ -2,6 +2,7 @@ import os
 import json
 from crewai import Crew, Process
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -11,6 +12,16 @@ from stock_tasks import create_tasks
 load_dotenv()
 
 app = FastAPI()
+
+# ---------------- CORS (REQUIRED FOR FRONTEND) ---------------- #
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 🔥 allow all for now (React local dev)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ---------------- REQUEST MODEL ---------------- #
@@ -31,7 +42,12 @@ def analyze_stock(company_ticker: str):
     tasks = create_tasks(ticker)
 
     crew = Crew(
-        agents=[data_collector, technical_analyst, news_analyst, investment_advisor],
+        agents=[
+            data_collector,
+            technical_analyst,
+            news_analyst,
+            investment_advisor
+        ],
         tasks=tasks,
         process=Process.sequential,
         verbose=False
@@ -56,6 +72,7 @@ def analyze(request: StockRequest):
 
         cleaned = result.strip()
 
+        # 🔥 Safe JSON extraction
         start = cleaned.find("{")
         end = cleaned.rfind("}") + 1
 
