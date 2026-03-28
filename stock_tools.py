@@ -164,7 +164,6 @@ def get_stock_news(ticker: str) -> str:
         # 🔥 NEVER crash pipeline
         return f"Unable to fetch news for {ticker}. Assume Neutral sentiment."
 
-    except Exception as e:
-        raise ValueError(f"News fetch failed for {ticker}: {str(e)}")
+ 
 
 
