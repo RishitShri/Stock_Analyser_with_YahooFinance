@@ -1,5 +1,5 @@
 import os
-import re
+import json
 from crewai import Crew, Process
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -42,21 +42,6 @@ def analyze_stock(company_ticker: str):
     return str(result)
 
 
-# ---------------- HELPER FUNCTIONS ---------------- #
-
-def extract_field(pattern, text, default=""):
-    match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-    return match.group(1).strip() if match else default
-
-
-def extract_list(section_text):
-    return [
-        line.strip("- ").strip()
-        for line in section_text.split("\n")
-        if line.strip()
-    ]
-
-
 # ---------------- API ROUTES ---------------- #
 
 @app.get("/")
@@ -69,36 +54,31 @@ def analyze(request: StockRequest):
     try:
         result = analyze_stock(request.ticker)
 
-        # -------- Dynamic Extraction -------- #
+        # 🔥 CLEAN JSON OUTPUT (no regex, no assumptions)
+        cleaned = result.strip()
 
-        result_upper = result.upper()
+        # Sometimes LLM may wrap JSON with extra text → fix it safely
+        start = cleaned.find("{")
+        end = cleaned.rfind("}") + 1
 
-        # Action (no hardcoding, detection only)
-        action = next(
-            (word for word in ["BUY", "SELL", "HOLD"] if word in result_upper),
-            "HOLD"
-        )
+        if start == -1 or end == -1:
+            raise ValueError("Invalid JSON format from LLM")
 
-        # Risk
-        risk = extract_field(r"Risk Level.*?:\s*(Low|Medium|High)", result, "Medium")
+        json_str = cleaned[start:end]
 
-        # Sections
-        summary = extract_field(r"1\.\s*(.*?)\n2\.", result)
-
-        strengths_raw = extract_field(r"Strengths:(.*?)Risks:", result)
-        risks_raw = extract_field(r"Risks:(.*?)3\.", result)
-
-        strengths = extract_list(strengths_raw)
-        risks = extract_list(risks_raw)
+        parsed = json.loads(json_str)
 
         return {
             "ticker": request.ticker.upper(),
-            "action": action,
-            "risk": risk,
-            "summary": summary,
-            "strengths": strengths,
-            "risks": risks
+            "action": parsed.get("action"),
+            "risk": parsed.get("risk"),
+            "summary": parsed.get("summary"),
+            "strengths": parsed.get("strengths", []),
+            "risks": parsed.get("risks", [])
         }
 
     except Exception as e:
-        return {"error": str(e)}
+        return {
+            "error": "Failed to process response",
+            "details": str(e)
+        }
