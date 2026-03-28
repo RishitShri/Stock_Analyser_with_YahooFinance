@@ -50,28 +50,29 @@ def create_tasks(ticker: str):
     )
 
     task4 = Task(
-        description=f"""
-        Based on ALL previous results, provide final recommendation for {ticker}.
+    description=f"""
+    Based on ALL previous results, provide final investment recommendation for {ticker}.
 
-        STRICT FORMAT:
+    You MUST return ONLY valid JSON (no text, no explanation outside JSON).
 
-        1. Brief overview of stock performance over the past 3 months
-        2. Key strengths and risks
-        3. Clear recommendation: BUY, SELL, or HOLD
-        4. Reasoning for recommendation
-        5. Risk level (Low/Medium/High)
-        6. Actionable summary
+    Format:
+    {{
+        "action": "BUY or SELL or HOLD",
+        "risk": "Low or Medium or High",
+        "summary": "Brief 2-3 line overview",
+        "strengths": ["point1", "point2", "point3"],
+        "risks": ["point1", "point2", "point3"]
+    }}
 
-        Use insights from:
-        - Stock data
-        - Technical indicators
-        - News sentiment
-
-        Do NOT add extra sections.
-        """,
-        agent=investment_advisor,
-        expected_output="Final structured investment recommendation",
-        context=[task1, task2, task3]
-    )
+    Rules:
+    - Do NOT add markdown
+    - Do NOT add explanation outside JSON
+    - Do NOT change keys
+    - Ensure valid JSON
+    """,
+    agent=investment_advisor,
+    expected_output="Strict JSON output",
+    context=[task1, task2, task3]
+)
 
     return [task1, task2, task3, task4]
