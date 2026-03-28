@@ -149,15 +149,20 @@ def get_stock_news(ticker: str) -> str:
         news = stock.news
 
         if not news:
-            raise ValueError(f"No news available for ticker: {ticker}")
+            return f"No recent news available for {ticker}. Sentiment: Neutral"
 
         result = f"Recent News for {ticker}:\n\n"
+
         for i, article in enumerate(news[:5], 1):
             title = article.get('title', 'N/A')
             publisher = article.get('publisher', 'N/A')
             result += f"{i}. {title} - {publisher}\n"
 
         return result
+
+    except Exception:
+        # 🔥 NEVER crash pipeline
+        return f"Unable to fetch news for {ticker}. Assume Neutral sentiment."
 
     except Exception as e:
         raise ValueError(f"News fetch failed for {ticker}: {str(e)}")
