@@ -54,10 +54,8 @@ def analyze(request: StockRequest):
     try:
         result = analyze_stock(request.ticker)
 
-        # 🔥 CLEAN JSON OUTPUT (no regex, no assumptions)
         cleaned = result.strip()
 
-        # Sometimes LLM may wrap JSON with extra text → fix it safely
         start = cleaned.find("{")
         end = cleaned.rfind("}") + 1
 
@@ -65,20 +63,22 @@ def analyze(request: StockRequest):
             raise ValueError("Invalid JSON format from LLM")
 
         json_str = cleaned[start:end]
-
         parsed = json.loads(json_str)
 
         return {
-            "ticker": request.ticker.upper(),
-            "action": parsed.get("action"),
-            "risk": parsed.get("risk"),
-            "summary": parsed.get("summary"),
-            "strengths": parsed.get("strengths", []),
-            "risks": parsed.get("risks", [])
+            "success": True,
+            "data": {
+                "ticker": request.ticker.upper(),
+                "action": parsed.get("action", "").upper(),
+                "risk": parsed.get("risk", "").upper(),
+                "summary": parsed.get("summary", ""),
+                "strengths": parsed.get("strengths", []),
+                "risks": parsed.get("risks", [])
+            }
         }
 
     except Exception as e:
         return {
-            "error": "Failed to process response",
-            "details": str(e)
+            "success": False,
+            "error": str(e)
         }
