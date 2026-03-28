@@ -2,11 +2,11 @@ from crewai import Task
 from stock_agents import data_collector, technical_analyst, news_analyst, investment_advisor
 
 
-def create_tasks():
+def create_tasks(ticker: str):
     """Create tasks for analyzing the given stock ticker"""
 
     task1 = Task(
-        description="""
+        description=f"""
         Collect comprehensive stock data for {ticker}.
 
         You MUST:
@@ -21,7 +21,7 @@ def create_tasks():
     )
 
     task2 = Task(
-        description="""
+        description=f"""
         Perform technical analysis on {ticker}.
 
         You MUST:
@@ -36,7 +36,7 @@ def create_tasks():
     )
 
     task3 = Task(
-        description="""
+        description=f"""
         Analyze recent news for {ticker}.
 
         You MUST:
@@ -50,7 +50,7 @@ def create_tasks():
     )
 
     task4 = Task(
-        description="""
+        description=f"""
         Based on ALL previous results, provide final recommendation for {ticker}.
 
         STRICT FORMAT:
@@ -75,5 +75,3 @@ def create_tasks():
     )
 
     return [task1, task2, task3, task4]
-
-
