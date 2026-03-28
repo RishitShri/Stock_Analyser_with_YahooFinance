@@ -5,10 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Import agents
 from stock_agents import data_collector, technical_analyst, news_analyst, investment_advisor
-
-# Import tasks
 from stock_tasks import create_tasks
 
 load_dotenv()
@@ -37,7 +34,7 @@ def analyze_stock(company_ticker: str):
         agents=[data_collector, technical_analyst, news_analyst, investment_advisor],
         tasks=tasks,
         process=Process.sequential,
-        verbose=False   # 🔥 important
+        verbose=False
     )
 
     result = crew.kickoff()
@@ -45,11 +42,19 @@ def analyze_stock(company_ticker: str):
     return str(result)
 
 
-# ---------------- HELPER (STRUCTURED PARSING) ---------------- #
+# ---------------- HELPER FUNCTIONS ---------------- #
 
 def extract_field(pattern, text, default=""):
     match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
     return match.group(1).strip() if match else default
+
+
+def extract_list(section_text):
+    return [
+        line.strip("- ").strip()
+        for line in section_text.split("\n")
+        if line.strip()
+    ]
 
 
 # ---------------- API ROUTES ---------------- #
@@ -64,35 +69,27 @@ def analyze(request: StockRequest):
     try:
         result = analyze_stock(request.ticker)
 
-        # -------- Extract structured fields -------- #
+        # -------- Dynamic Extraction -------- #
 
-        # Action
-        action = "HOLD"
-        if "BUY" in result.upper():
-            action = "BUY"
-        elif "SELL" in result.upper():
-            action = "SELL"
+        result_upper = result.upper()
+
+        # Action (no hardcoding, detection only)
+        action = next(
+            (word for word in ["BUY", "SELL", "HOLD"] if word in result_upper),
+            "HOLD"
+        )
 
         # Risk
         risk = extract_field(r"Risk Level.*?:\s*(Low|Medium|High)", result, "Medium")
 
         # Sections
         summary = extract_field(r"1\.\s*(.*?)\n2\.", result)
+
         strengths_raw = extract_field(r"Strengths:(.*?)Risks:", result)
         risks_raw = extract_field(r"Risks:(.*?)3\.", result)
-        reasoning = extract_field(r"Reasoning.*?:\s*(.*?)\n5\.", result)
 
-        strengths = [
-            s.strip("- ").strip()
-            for s in strengths_raw.split("\n")
-            if s.strip()
-        ]
-
-        risks = [
-            r.strip("- ").strip()
-            for r in risks_raw.split("\n")
-            if r.strip()
-        ]
+        strengths = extract_list(strengths_raw)
+        risks = extract_list(risks_raw)
 
         return {
             "ticker": request.ticker.upper(),
@@ -100,8 +97,7 @@ def analyze(request: StockRequest):
             "risk": risk,
             "summary": summary,
             "strengths": strengths,
-            "risks": risks,
-            "reasoning": reasoning
+            "risks": risks
         }
 
     except Exception as e:
