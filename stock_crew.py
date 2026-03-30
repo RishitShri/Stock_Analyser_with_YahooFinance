@@ -17,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 🔥 allow all for now (React local dev)
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,7 +72,7 @@ def analyze(request: StockRequest):
 
         cleaned = result.strip()
 
-        # 🔥 Safe JSON extraction
+      
         start = cleaned.find("{")
         end = cleaned.rfind("}") + 1
 
